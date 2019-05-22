@@ -4,7 +4,7 @@ enablePlugins(JavaServerAppPackaging)
 
 libraryDependencies ++= Seq(
   "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "0.19.0",
-  "com.lightbend.akka.discovery" %% "akka-discovery-dns" % "0.19.0",
+  "com.lightbend.akka.discovery" %% "akka-discovery-dns" % "0.20.0",
 )
 
 version := "1.3.3.7" // we hard-code the version here, it could be anything really
