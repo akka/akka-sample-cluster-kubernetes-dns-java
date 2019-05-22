@@ -3,7 +3,7 @@ import com.typesafe.sbt.packager.docker._
 enablePlugins(JavaServerAppPackaging)
 
 libraryDependencies ++= Seq(
-  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "0.19.0",
+  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "0.20.0",
   "com.lightbend.akka.discovery" %% "akka-discovery-dns" % "0.19.0",
 )
 
