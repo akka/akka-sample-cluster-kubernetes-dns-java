@@ -22,7 +22,7 @@ fi
 
 POD=$(kubectl get pods | grep akka-sample-cluster-kubernetes-dns-java | grep Running | head -n1 | awk '{ print $1 }')
 
-for i in {1..10}
+for i in {1..20}
 do
   echo "Checking for MemberUp logging..."
   kubectl logs $POD akka-sample-cluster-kubernetes-dns-java | grep MemberUp || true
