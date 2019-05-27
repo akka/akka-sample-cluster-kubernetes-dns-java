@@ -22,7 +22,7 @@ import akka.actor.Props;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
 import akka.cluster.MemberStatus;
-import akka.management.AkkaManagement;
+import akka.management.scaladsl.AkkaManagement;
 import akka.management.cluster.bootstrap.ClusterBootstrap;
 import akka.stream.Materializer;
 
