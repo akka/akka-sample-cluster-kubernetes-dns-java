@@ -3,7 +3,7 @@ import com.typesafe.sbt.packager.docker._
 enablePlugins(JavaServerAppPackaging)
 
 libraryDependencies ++= Seq(
-  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.3",
+  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.4",
 )
 
 version := "1.3.3.7" // we hard-code the version here, it could be anything really
