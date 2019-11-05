@@ -2,8 +2,15 @@ import com.typesafe.sbt.packager.docker._
 
 enablePlugins(JavaServerAppPackaging)
 
+val akkaVersion = "2.6.0-RC2"
+
 libraryDependencies ++= Seq(
-  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.3",
+  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.4",
+  "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
+  "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
+  "ch.qos.logback" % "logback-classic" % "1.2.3"
 )
 
 version := "1.3.3.7" // we hard-code the version here, it could be anything really

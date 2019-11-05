@@ -3,23 +3,29 @@
  */
 package akka.cluster.bootstrap.demo;
 
-import akka.actor.AbstractActor;
-import akka.cluster.Cluster;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
-import akka.japi.pf.ReceiveBuilder;
+import akka.actor.typed.Behavior;
+import akka.actor.typed.javadsl.AbstractBehavior;
+import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.Behaviors;
+import akka.actor.typed.javadsl.Receive;
+import akka.cluster.ClusterEvent;
 
-public class ClusterWatcher extends AbstractActor {
-  LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+public class ClusterWatcher extends AbstractBehavior<ClusterEvent.MemberEvent> {
 
-  Cluster cluster = Cluster.get(context().system());
+    public static Behavior<ClusterEvent.MemberEvent> create() {
+        return Behaviors.setup(ClusterWatcher::new);
+    }
 
-  @Override
-  public Receive createReceive() {
-    return ReceiveBuilder.create()
-      .matchAny(msg -> {
-        log.info("Cluster " + cluster.selfAddress() + " >>> " + msg);
-      })
-      .build();
-  }
+    private ClusterWatcher(ActorContext<ClusterEvent.MemberEvent> context) {
+        super(context);
+    }
+
+    @Override
+    public Receive<ClusterEvent.MemberEvent> createReceive() {
+        return newReceiveBuilder()
+                .onAnyMessage(m -> {
+                    getContext().getLog().info("Member event: {}", m);
+                    return this;
+                }).build();
+    }
 }
