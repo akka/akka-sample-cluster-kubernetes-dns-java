@@ -3,30 +3,38 @@
  */
 package akka.cluster.bootstrap.demo;
 
-import akka.actor.AbstractLoggingActor;
-import akka.actor.Props;
+import akka.actor.typed.Behavior;
+import akka.actor.typed.PostStop;
+import akka.actor.typed.javadsl.AbstractBehavior;
+import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.Behaviors;
+import akka.actor.typed.javadsl.Receive;
 
-public class NoisyActor extends AbstractLoggingActor {
+public class NoisyActor extends AbstractBehavior<String> {
 
-    public static Props props() {
-        return Props.create(NoisyActor.class, NoisyActor::new);
+    public static Behavior<String> create() {
+        return Behaviors.setup(ctx -> {
+            ctx.getLog().info("Noisy actor started");
+            return new NoisyActor(ctx);
+        });
+    }
+
+    private NoisyActor(ActorContext<String> context) {
+        super(context);
     }
 
     @Override
-    public void preStart() {
-        log().info("Noisy singleton started");
+    public Receive<String> createReceive() {
+        return newReceiveBuilder()
+                .onAnyMessage(msg -> {
+                    getContext().getLog().info("Msg {}", msg);
+                   return this;
+                })
+                .onSignal(PostStop.class, ps -> {
+                    getContext().getLog().info("Noisy actor stopped");
+                    return this;
+                }).build();
     }
 
-    @Override
-    public void postStop() {
-        log().info("Noisy singleton stopped");
-    }
-
-    @Override
-    public AbstractLoggingActor.Receive createReceive() {
-        return receiveBuilder()
-            .matchAny(msg -> log().info("Msg: {}" + msg))
-                .build();
-    }
 
 }

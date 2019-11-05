@@ -4,10 +4,14 @@
 package akka.cluster.bootstrap.demo;
 
 import akka.NotUsed;
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-
-import akka.actor.PoisonPill;
+import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import akka.actor.typed.javadsl.Adapter;
+import akka.actor.typed.javadsl.Behaviors;
+import akka.cluster.ClusterEvent;
+import akka.cluster.MemberStatus;
+import akka.cluster.typed.Cluster;
+import akka.cluster.typed.Subscribe;
 import akka.http.javadsl.ConnectHttp;
 import akka.http.javadsl.Http;
 import akka.http.javadsl.ServerBinding;
@@ -16,15 +20,10 @@ import akka.http.javadsl.model.HttpResponse;
 import akka.http.javadsl.model.StatusCodes;
 import akka.http.javadsl.server.AllDirectives;
 import akka.http.javadsl.server.Route;
-import akka.stream.ActorMaterializer;
-import akka.stream.javadsl.Flow;
-import akka.actor.Props;
-import akka.cluster.Cluster;
-import akka.cluster.ClusterEvent;
-import akka.cluster.MemberStatus;
-import akka.management.scaladsl.AkkaManagement;
 import akka.management.cluster.bootstrap.ClusterBootstrap;
+import akka.management.javadsl.AkkaManagement;
 import akka.stream.Materializer;
+import akka.stream.javadsl.Flow;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,47 +31,37 @@ import java.util.concurrent.CompletionStage;
 
 public class ClusterApp extends AllDirectives {
 
-  ClusterApp() {
-    ActorSystem system = ActorSystem.create();
+  private ClusterApp() {
+    ActorSystem system = ActorSystem.create(Behaviors.setup(context -> {
+        akka.actor.ActorSystem classicSystem = Adapter.toClassic(context.getSystem());
+        Cluster cluster = Cluster.get(context.getSystem());
+        context.getLog().info("Started [" + context.getSystem() + "], cluster.selfAddress = " + cluster.selfMember().address() + ")");
+        final Http http = Http.get(classicSystem);
+        Materializer materializer = Materializer.createMaterializer(classicSystem);
+        final Flow<HttpRequest, HttpResponse, NotUsed> routeFlow = createRoutes(classicSystem, cluster).flow(classicSystem, materializer);
+        final CompletionStage<ServerBinding> binding = http.bindAndHandle(routeFlow,
+                ConnectHttp.toHost("0.0.0.0", 8080), materializer);
 
-    final Http http = Http.get(system);
-    Materializer materializer = ActorMaterializer.create(system);
-    Cluster cluster = Cluster.get(system);
+        context.spawn(NoisyActor.create(), "NoisyActor");
+        ActorRef<ClusterEvent.MemberEvent> clusterWatcher = context.spawn(ClusterWatcher.create(), "ClusterWatcher");
 
-    system.log().info("Started [" + system + "], cluster.selfAddress = " + cluster.selfAddress() + ")");
+        cluster.subscriptions().tell(new Subscribe<>(clusterWatcher, ClusterEvent.MemberEvent.class));
 
-    AkkaManagement.get(system).start();
-    ClusterBootstrap.get(system).start();
-
-    cluster
-      .subscribe(system.actorOf(Props.create(ClusterWatcher.class)), ClusterEvent.initialStateAsEvents(), ClusterEvent.ClusterDomainEvent.class);
-
-    // create actors
-    ActorRef noisyActor = createNoisyActor(system);
-
-    final Flow<HttpRequest, HttpResponse, NotUsed> routeFlow = createRoutes(system, cluster).flow(system, materializer);
-    final CompletionStage<ServerBinding> binding = http.bindAndHandle(routeFlow,
-            ConnectHttp.toHost("0.0.0.0", 8080), materializer);
-
-    cluster.registerOnMemberUp(() -> {
-      system.log().info("Cluster member is up!");
-      noisyActor.tell(PoisonPill.getInstance(), ActorRef.noSender());
-    });
-
+        AkkaManagement.get(classicSystem).start();
+        ClusterBootstrap.get(classicSystem).start();
+        return Behaviors.empty();
+    }),"ClusterApp");
   }
 
-  private ActorRef createNoisyActor(ActorSystem system) {
-      return system.actorOf(NoisyActor.props(), "NoisyActor");
-  }
 
-  private Route createRoutes(ActorSystem system, Cluster cluster) {
+  private Route createRoutes(akka.actor.ActorSystem system, Cluster cluster) {
     Set<MemberStatus> readyStates = new HashSet<MemberStatus>();
     readyStates.add(MemberStatus.up());
     readyStates.add(MemberStatus.weaklyUp());
 
     return
         // only handle GET requests
-        get(() -> route(
+        get(() -> concat(
             path("ready", () -> {
                         MemberStatus selfState = cluster.selfMember().status();
                         system.log().debug("ready? clusterState:" + selfState);
