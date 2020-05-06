@@ -2,7 +2,8 @@
 
 set -exu
 
-sbt docker:publishLocal
+# sbt docker:publishLocal
+mvn clean package docker:build
 
 kubectl apply -f kubernetes/akka-cluster.yml
 
