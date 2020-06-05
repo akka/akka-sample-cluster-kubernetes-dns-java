@@ -5,7 +5,7 @@ enablePlugins(JavaServerAppPackaging)
 val akkaVersion = "2.6.5"
 
 libraryDependencies ++= Seq(
-  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.7",
+  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.8",
   "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
