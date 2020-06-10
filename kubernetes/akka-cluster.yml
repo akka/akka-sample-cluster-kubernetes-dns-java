@@ -40,8 +40,6 @@ spec:
         ports:
         - containerPort: 8558
           name: management
-        - containerPort: 2552
-          name: remoting
         volumeMounts: []
       volumes: []
 ---
@@ -60,10 +58,6 @@ spec:
     port: 8558
     protocol: TCP
     targetPort: 8558
-  - name: remoting
-    port: 2552
-    protocol: TCP
-    targetPort: 2552
   selector:
     appName: "akka-sample-cluster-kubernetes-dns-java"
   clusterIP: None

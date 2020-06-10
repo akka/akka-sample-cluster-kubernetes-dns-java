@@ -21,7 +21,7 @@ dockerCommands :=
   }
 
 
-dockerExposedPorts := Seq(8080, 8558, 2552)
+dockerExposedPorts := Seq(8080, 8558)
 dockerBaseImage := "openjdk:8-jre-alpine"
 
 dockerCommands ++= Seq(
