@@ -2,7 +2,7 @@ import com.typesafe.sbt.packager.docker._
 
 enablePlugins(JavaServerAppPackaging)
 
-val akkaVersion = "2.6.7"
+val akkaVersion = "2.6.8"
 
 libraryDependencies ++= Seq(
   "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.8",
