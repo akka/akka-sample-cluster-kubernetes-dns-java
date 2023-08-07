@@ -4,6 +4,8 @@ enablePlugins(JavaServerAppPackaging)
 
 val akkaVersion = "2.6.12"
 
+resolvers += "Akka library repository".at("https://repo.akka.io/maven")
+
 libraryDependencies ++= Seq(
   "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % "1.0.9",
   "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
